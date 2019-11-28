@@ -1,0 +1,12 @@
+#gamespace {
+    border: 1px solid black;
+    background-color: black;
+}
+
+.wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+}
