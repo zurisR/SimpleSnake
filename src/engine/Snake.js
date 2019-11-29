@@ -1,16 +1,23 @@
 import SnakePart from './SnakePart';
+import Apple from './Apple';
 import {Directions} from './enums';
 
 class Snake {
     constructor(length, x, y) {
         this.snake = [];
         this.snakeHead = null;
+        this.apple = null;
         this.xCordStart = x;
         this.yCordStart = y;
 
-        this.speed = 100;
+        this.points = 0;
+
+        this.AWARD_FOR_APPLE = 5;
+        this.SPEED_INCREASING_INDEX = 5;
+        this.speed = 300;
         this.SNAKE_PART_SIZE = 25;
         this.currentDirection = Directions.ArrowRight;
+        this.nextDirection = Directions.ArrowRight;
 
         this.lastTimeRedrawing = null;
 
@@ -26,12 +33,17 @@ class Snake {
         this.setReadyStatus = this.setReadyStatus.bind(this);
         this.getReadyStatus = this.getReadyStatus.bind(this);
         this.drawSnake = this.drawSnake.bind(this);
+        this.drawEndGame = this.drawEndGame.bind(this);
         this.stopGame = this.stopGame.bind(this);
         this.startGame = this.startGame.bind(this);
         this.isPlayerLost = this.isPlayerLost.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
 
         this.initSnake(length);
+    }
+
+    setScoreSetter(callback) {
+        this.setScoreToUI = callback;
     }
     
     setContext(ctx) {
@@ -71,6 +83,43 @@ class Snake {
         }
     }
 
+    getRandomInt(max) {
+        return Math.floor(Math.random() * Math.floor(max));
+    }
+
+    checkForCrossWithSnake(xCord, yCord, excludeHead = false) {
+        let result = true;
+
+        for (let part of this.snake) {
+            if (excludeHead && this.snakeHead === part) {
+                continue;
+            }
+            let [xCordSnakePart, yCordSnakePart] = part.getCurrentCords();
+            if (xCord === xCordSnakePart && yCord === yCordSnakePart) {
+                result = false;
+            }
+        }
+
+        return result;
+    }
+
+    drawApple() {
+        if (!this.apple) {
+            let xCord, yCord;
+            while (true) {
+                xCord = this.getRandomInt(20) * 25;
+                yCord = this.getRandomInt(20) * 25;
+
+                if (this.checkForCrossWithSnake(xCord, yCord)) {
+                    break;
+                }
+            }
+            this.apple = new Apple(xCord, yCord, 25);
+        }
+
+        this.apple.draw(this.ctx);
+    }
+
     drawSnake() {
         if (this.snake.length === 0) {
             console.log("The Snake hasn't been initialize.");
@@ -84,17 +133,24 @@ class Snake {
         let prevPart = null;
 
         let stepDest = this.SNAKE_PART_SIZE;
-
-        let movingDirection = this.currentDirection;
-
+        
         this.snake.forEach(part => {
-            console.log(part === this.snakeHead, part.getCurrentCords());
             part.draw(this.ctx);
 
             if (part === this.snakeHead) {
                 let [xCord, yCord] = part.getCurrentCords();
+                let [xCordApple, yCordApple] = this.apple.getCoords();
 
-                switch (movingDirection) {
+                if (xCord === xCordApple && yCord === yCordApple) {
+                    //eat this apple ;)
+                    this.points += this.AWARD_FOR_APPLE;
+                    this.speed -= this.SPEED_INCREASING_INDEX;
+                    this.apple = null;
+                    this.addPartToSnake();
+                    this.setScoreToUI(this.points);
+                }
+
+                switch (this.currentDirection) {
                     case Directions.ArrowRight:
                         xCord += stepDest; 
                         break;
@@ -111,12 +167,6 @@ class Snake {
                         break;
                 }
 
-                // if (xCord + stepDest === this.wLimit) {
-                //     // // xCord = 0;
-                //     // this.stopGame();
-                // } else {
-                //     xCord += stepDest;
-                // }
                 part.setCurrentCords(xCord, yCord);
             }
 
@@ -127,31 +177,46 @@ class Snake {
             
             prevPart = part;
         });
+    }
 
-        
+    drawEndGame() {
+        let img = new Image(400, 400);
+        img.src = 'http://localhost:3000/потрачено.png';
+        console.log(img);
+        this.ctx.clearRect(0, 0, this.wLimit, this.hLimit);
+        this.ctx.drawImage(img, 50, 50);
+    }
+
+    addPartToSnake() {
+        let [xCord, yCord] = this.snake[this.snake.length - 1].getCurrentCords();
+        let snakePart = new SnakePart(xCord, yCord, this.SNAKE_PART_SIZE);
+        this.snake.push(snakePart);
     }
 
     startGame(callback) {
+        document.onkeydown = this.onKeyDown;
+
         this.notifyAboutGameStatus = callback;
 
         this.gameIsEnded = false;
+        this.points = 0;
         this.rafID = requestAnimationFrame(this.loop);
 
         this.notifyAboutGameStatus(true);
+        this.setScoreToUI(0);
 
-        document.onkeydown = this.onKeyDown;
     }
 
     stopGame() {
         document.onkeydown = null;
         this.gameIsEnded = true;
-        this.notifyAboutGameStatus(false);
         cancelAnimationFrame(this.rafID);
-
+        this.notifyAboutGameStatus(false);
     }
 
     loop(timestamp) {
         if (this.gameIsEnded) {
+            this.drawEndGame();
             return;
         }
         if (!this.lastTimeRedrawing) {
@@ -165,7 +230,9 @@ class Snake {
         }
 
         if (timeDifference >= this.speed) {
+            this.currentDirection = this.nextDirection;
             this.ctx.clearRect(0, 0, this.wLimit, this.hLimit);
+            this.drawApple();
             this.drawSnake();
             this.lastTimeRedrawing = timestamp;
         }
@@ -174,9 +241,8 @@ class Snake {
     }
 
     isPlayerLost() {
-        let loser = false;
-        let movingIndex = 1,
-            movingDirection = this.currentDirection,
+        let playerLost = false;
+        let movingDirection = this.currentDirection,
             step = this.SNAKE_PART_SIZE;
         let [xCord, yCord] = this.snakeHead.getCurrentCords();
         //check on borders
@@ -184,38 +250,43 @@ class Snake {
             case Directions.ArrowRight:
                 xCord += step; 
                 if (xCord === this.wLimit) {
-                    loser = true;
-                }
+                    playerLost = true;
+                } 
                 break;
             case Directions.ArrowLeft:
                 if (xCord === 0) {
-                    loser = true;
+                    playerLost = true;
                 }
                 break;
             case Directions.ArrowUp:
                 if (yCord === 0) {
-                    loser = true;
+                    playerLost = true;
                 }
                 break;
             case Directions.ArrowDown:
                 yCord += step;
                 if (yCord === this.hLimit) {
-                    loser = true;
+                    playerLost = true;
                 }
                 break;
             default:
                 break;
         }
 
-        return loser;
+        if (!this.checkForCrossWithSnake(xCord, yCord, true)) {
+            playerLost = true;
+        }
+
+        return playerLost;
     }
 
     onKeyDown(e) {
+        this.nextDirection = Directions[e.code];
+
         //ban the opposite directions
-        if (this.currentDirection === Directions[e.code] * -1) {
-            return;
+        if (this.currentDirection === this.nextDirection * -1) {
+            this.nextDirection = this.currentDirection;
         }
-        this.currentDirection = Directions[e.code];
     }
 }
 

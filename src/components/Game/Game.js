@@ -1,16 +1,20 @@
 import React, {useState, useEffect, useRef} from 'react';
+import Button from '../button/Button';
+import Score from '../score/Score';
 import './game.css';
 
 import Snake from '../../engine/Snake';
+
 
 function Game(props) { 
     
     //false - ended, true - in process
     const [gameStatus, setGameStatus] = useState(true);
+    const [score, setScore] = useState(0);
     
     const canvas = useRef(null);
 
-    const snake = new Snake(10, 0, 225);
+    const snake = new Snake(2, 0, 225);
 
     useEffect(() => {
         let ready = snake.getReadyStatus();
@@ -19,6 +23,7 @@ function Game(props) {
             snake.setContext(ctx);
             snake.setWidthLimit(canvas.current.width);
             snake.setHeightLimit(canvas.current.height);
+            snake.setScoreSetter(setScore);
             snake.setReadyStatus(true);
         }
     });
@@ -31,10 +36,13 @@ function Game(props) {
 
     return (
         <div className="wrapper">
+            <Score value={score} />
             <canvas ref={canvas} id="gamespace" width="500" height="500">
                 Похоже, что вы используете очень старый браузер. Вы многое теряете...
             </canvas> 
-            <button onClick={startGame}>Start</button>          
+            <div>
+                <Button onClick={startGame} text="Start"/>          
+            </div>
         </div>
     );
 }
