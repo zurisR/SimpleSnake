@@ -124,11 +124,7 @@ class Snake {
         if (this.snake.length === 0) {
             console.log("The Snake hasn't been initialize.");
             return;
-        }    
-        
-        if (!this.gameIsEnded && this.isPlayerLost()) {
-            this.stopGame();
-        }
+        }         
 
         let prevPart = null;
 
@@ -177,14 +173,16 @@ class Snake {
             
             prevPart = part;
         });
+        if (!this.gameIsEnded && this.isPlayerLost()) {
+            this.stopGame();
+        }
     }
 
     drawEndGame() {
         let img = new Image(400, 400);
-        img.src = 'http://localhost:3000/потрачено.png';
-        console.log(img);
+        img.src = 'http://localhost:3000/wasted.png';
         this.ctx.clearRect(0, 0, this.wLimit, this.hLimit);
-        this.ctx.drawImage(img, 50, 50);
+        this.ctx.drawImage(img, 0, 0, 500, 500);
     }
 
     addPartToSnake() {
@@ -210,7 +208,7 @@ class Snake {
     stopGame() {
         document.onkeydown = null;
         this.gameIsEnded = true;
-        cancelAnimationFrame(this.rafID);
+        //cancelAnimationFrame(this.rafID);
         this.notifyAboutGameStatus(false);
     }
 
@@ -245,27 +243,30 @@ class Snake {
         let movingDirection = this.currentDirection,
             step = this.SNAKE_PART_SIZE;
         let [xCord, yCord] = this.snakeHead.getCurrentCords();
+        console.log(xCord, yCord);
         //check on borders
         switch (movingDirection) {
             case Directions.ArrowRight:
-                xCord += step; 
-                if (xCord === this.wLimit) {
+                // xCord += step; 
+                if (xCord > this.wLimit) {
                     playerLost = true;
                 } 
                 break;
             case Directions.ArrowLeft:
-                if (xCord === 0) {
+                
+                if (xCord < 0) {
                     playerLost = true;
                 }
                 break;
             case Directions.ArrowUp:
-                if (yCord === 0) {
+                // yCord += step;
+                if (yCord < 0) {
                     playerLost = true;
                 }
                 break;
             case Directions.ArrowDown:
-                yCord += step;
-                if (yCord === this.hLimit) {
+                // yCord += step;
+                if (yCord > this.hLimit) {
                     playerLost = true;
                 }
                 break;
@@ -282,6 +283,10 @@ class Snake {
 
     onKeyDown(e) {
         this.nextDirection = Directions[e.code];
+
+        if (this.nextDirection === undefined) {
+            this.nextDirection = this.currentDirection;
+        }
 
         //ban the opposite directions
         if (this.currentDirection === this.nextDirection * -1) {
