@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/SimpleSnake/static/css/main.02e46b27.chunk.css",
-    "main.js": "/SimpleSnake/static/js/main.9cfa59ae.chunk.js",
-    "main.js.map": "/SimpleSnake/static/js/main.9cfa59ae.chunk.js.map",
+    "main.js": "/SimpleSnake/static/js/main.dbba77c0.chunk.js",
+    "main.js.map": "/SimpleSnake/static/js/main.dbba77c0.chunk.js.map",
     "runtime-main.js": "/SimpleSnake/static/js/runtime-main.1a51c530.js",
     "runtime-main.js.map": "/SimpleSnake/static/js/runtime-main.1a51c530.js.map",
     "static/js/2.f15449cd.chunk.js": "/SimpleSnake/static/js/2.f15449cd.chunk.js",
     "static/js/2.f15449cd.chunk.js.map": "/SimpleSnake/static/js/2.f15449cd.chunk.js.map",
     "index.html": "/SimpleSnake/index.html",
-    "precache-manifest.454c952a509954f3ef460056fb3898ca.js": "/SimpleSnake/precache-manifest.454c952a509954f3ef460056fb3898ca.js",
+    "precache-manifest.6873ad862135f37be94848fb68b8c6ee.js": "/SimpleSnake/precache-manifest.6873ad862135f37be94848fb68b8c6ee.js",
     "service-worker.js": "/SimpleSnake/service-worker.js",
     "static/css/main.02e46b27.chunk.css.map": "/SimpleSnake/static/css/main.02e46b27.chunk.css.map"
   },
@@ -16,6 +16,6 @@
     "static/js/runtime-main.1a51c530.js",
     "static/js/2.f15449cd.chunk.js",
     "static/css/main.02e46b27.chunk.css",
-    "static/js/main.9cfa59ae.chunk.js"
+    "static/js/main.dbba77c0.chunk.js"
   ]
 }
