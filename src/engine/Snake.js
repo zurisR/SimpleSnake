@@ -136,9 +136,9 @@ class Snake {
         let prevPart = null;
 
         let stepDest = this.SNAKE_PART_SIZE;
-        
+                
         this.snake.forEach(part => {
-            part.draw(this.ctx);
+            // part.draw(this.ctx);
 
             if (part === this.snakeHead) {
                 let [xCord, yCord] = part.getCurrentCords();
@@ -177,9 +177,10 @@ class Snake {
                 let [xCord, yCord] = prevPart.getPrevCords();
                 part.setCurrentCords(xCord, yCord);
             }
-            
+            part.draw(this.ctx);
             prevPart = part;
         });
+
         if (!this.gameIsEnded && this.isPlayerLost()) {
             this.stopGame();
         }
@@ -244,8 +245,7 @@ class Snake {
         //check on borders
         switch (movingDirection) {
             case Directions.ArrowRight:
-                xCord += step; 
-                if (xCord > this.wLimit) {
+                if (xCord + step > this.wLimit) {
                     playerLost = true;
                 } 
                 break;
@@ -256,14 +256,12 @@ class Snake {
                 }
                 break;
             case Directions.ArrowUp:
-                // yCord += step;
                 if (yCord < 0) {
                     playerLost = true;
                 }
                 break;
             case Directions.ArrowDown:
-                yCord += step;
-                if (yCord > this.hLimit) {
+                if (yCord + step > this.hLimit) {
                     playerLost = true;
                 }
                 break;
