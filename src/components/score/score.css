@@ -4,7 +4,6 @@
     display: flex;
     align-items: start;
     width: 500px;
-    color:orange;
-    border-bottom: 5px solid red;
+    color: green;
     margin-bottom: 5px;
 }

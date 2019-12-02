@@ -1,10 +1,10 @@
 import React, {Component} from 'react';
-import Game from './components/Game/Game';
+import Main from './routes/Main';
 import './common.css';
 
 class App extends Component {
     render() {
-        return (<Game />);
+        return (<Main />);
     }
 }
 

@@ -40,6 +40,13 @@ class Snake {
         this.onKeyDown = this.onKeyDown.bind(this);
 
         this.initSnake(length);
+
+        this.img = new Image(400, 400);
+        this.img.src = '/wasted.png';
+    }
+
+    setGameIsOverSetter(callback) {
+        this.setGameIsOver = callback;
     }
 
     setScoreSetter(callback) {
@@ -124,7 +131,7 @@ class Snake {
         if (this.snake.length === 0) {
             console.log("The Snake hasn't been initialize.");
             return;
-        }         
+        }     
 
         let prevPart = null;
 
@@ -140,7 +147,7 @@ class Snake {
                 if (xCord === xCordApple && yCord === yCordApple) {
                     //eat this apple ;)
                     this.points += this.AWARD_FOR_APPLE;
-                    this.speed -= this.SPEED_INCREASING_INDEX;
+                    this.speed -= this.speed <= 100 ? 0 : this.SPEED_INCREASING_INDEX;
                     this.apple = null;
                     this.addPartToSnake();
                     this.setScoreToUI(this.points);
@@ -178,11 +185,9 @@ class Snake {
         }
     }
 
-    drawEndGame() {
-        let img = new Image(400, 400);
-        img.src = 'http://localhost:3000/wasted.png';
+    drawEndGame() {        
         this.ctx.clearRect(0, 0, this.wLimit, this.hLimit);
-        this.ctx.drawImage(img, 0, 0, 500, 500);
+        this.ctx.drawImage(this.img, 0, 0, 500, 500);
     }
 
     addPartToSnake() {
@@ -191,16 +196,13 @@ class Snake {
         this.snake.push(snakePart);
     }
 
-    startGame(callback) {
+    startGame() {
         document.onkeydown = this.onKeyDown;
-
-        this.notifyAboutGameStatus = callback;
 
         this.gameIsEnded = false;
         this.points = 0;
         this.rafID = requestAnimationFrame(this.loop);
 
-        this.notifyAboutGameStatus(true);
         this.setScoreToUI(0);
 
     }
@@ -208,8 +210,8 @@ class Snake {
     stopGame() {
         document.onkeydown = null;
         this.gameIsEnded = true;
-        //cancelAnimationFrame(this.rafID);
-        this.notifyAboutGameStatus(false);
+
+        this.setGameIsOver(true);
     }
 
     loop(timestamp) {
@@ -222,10 +224,6 @@ class Snake {
         }
 
         let timeDifference = timestamp - this.lastTimeRedrawing;
-
-        if (!this.ctx) {
-            return;
-        }
 
         if (timeDifference >= this.speed) {
             this.currentDirection = this.nextDirection;
@@ -243,11 +241,10 @@ class Snake {
         let movingDirection = this.currentDirection,
             step = this.SNAKE_PART_SIZE;
         let [xCord, yCord] = this.snakeHead.getCurrentCords();
-        console.log(xCord, yCord);
         //check on borders
         switch (movingDirection) {
             case Directions.ArrowRight:
-                // xCord += step; 
+                xCord += step; 
                 if (xCord > this.wLimit) {
                     playerLost = true;
                 } 
@@ -265,7 +262,7 @@ class Snake {
                 }
                 break;
             case Directions.ArrowDown:
-                // yCord += step;
+                yCord += step;
                 if (yCord > this.hLimit) {
                     playerLost = true;
                 }

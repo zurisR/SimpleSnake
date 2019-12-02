@@ -5,12 +5,10 @@ import './game.css';
 
 import Snake from '../../engine/Snake';
 
-
 function Game(props) { 
     
-    //false - ended, true - in process
-    const [gameStatus, setGameStatus] = useState(true);
-    const [score, setScore] = useState(0);
+    const [scores, setScore] = useState(0);
+    const [gameIsOver, setGameIsOver] = useState(false);
     
     const canvas = useRef(null);
 
@@ -24,25 +22,42 @@ function Game(props) {
             snake.setWidthLimit(canvas.current.width);
             snake.setHeightLimit(canvas.current.height);
             snake.setScoreSetter(setScore);
+            snake.setGameIsOverSetter(setGameIsOver);
             snake.setReadyStatus(true);
         }
     });
 
+    useEffect(() => {
+        if (gameIsOver) {
+            storeScores();
+        }
+    }, [gameIsOver]);
+
+    function storeScores() {
+        let name = prompt('Введите имя для сохранения результата.');
+        if (name) {
+            let prevRecord = localStorage.getItem(name);
+            if (prevRecord && Number(prevRecord) > scores) {
+                console.log("Your previous scores record bigger than current.");
+                return;
+            }
+            localStorage.setItem(name, scores);
+        }
+    }
+
     function startGame(e) {
         e.preventDefault();
-
-        snake.startGame(setGameStatus);
+        setGameIsOver(false);
+        snake.startGame();
     }
 
     return (
         <div className="wrapper">
-            <Score value={score} />
+            <Score value={scores} />
             <canvas ref={canvas} id="gamespace" width="500" height="500">
                 Похоже, что вы используете очень старый браузер. Вы многое теряете...
-            </canvas> 
-            <div>
-                <Button onClick={startGame} text="Start"/>          
-            </div>
+            </canvas>
+            <Button onClick={startGame} text="Начать"/>
         </div>
     );
 }
